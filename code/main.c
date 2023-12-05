@@ -4,7 +4,8 @@
 #include "structs.h"
 
 int main() {
-    printf("Hello, World!\n");
-    bezout(320, 152);
+    printf("M32 - TD\n");
+    uint32_t tab;
+    sieve(100, &tab);
     return 0;
 }
