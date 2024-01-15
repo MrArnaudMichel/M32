@@ -220,6 +220,7 @@ char MR_test(uint32_t n, int witness_nb) {
 * retourné
 */
 uint32_t MR_prime(int k, float epsilon) {
+
     uint32_t candidate;
     do {
         candidate = (1 << (k - 1)) + generate_random((1 << (k - 1)));
