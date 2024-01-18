@@ -5,8 +5,6 @@
 
 int main() {
     printf("M32 - TD\n");
-    printf("%d\n", fast_exp(5, 39, 20));
-    printf("%d\n", least_primitive_root(13));
-    printf("%d\n", discrete_log(2, 910, 911));
+    printf("\n", bezout(1876, 365));
     return 0;
 }

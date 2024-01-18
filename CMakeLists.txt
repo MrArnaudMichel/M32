@@ -6,4 +6,8 @@ set(CMAKE_C_STANDARD 11)
 add_executable(M32 code/main.c
         code/structs.h
         code/algo.h
-        code/algo.c)
+        code/algo.c
+        code/RSA.c)
+
+target_link_libraries(M32 PRIVATE m)
+

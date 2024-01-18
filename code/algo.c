@@ -11,8 +11,8 @@ EB bezout(uint32_t a, uint32_t b) {
     result.a = a;
     result.b = b;
 
-    uint32_t uK[64];
-    uint32_t vK[64];
+    int32_t uK[64];
+    int32_t vK[64];
 
     uK[0] = 1;
     uK[1] = 0;
@@ -28,18 +28,20 @@ EB bezout(uint32_t a, uint32_t b) {
 
     int k = 2;
     while (euclide.r != 0) {
+        printf("%d\t=\t%d\tx\t%d\t+\t%d\n", euclide.a, euclide.b, euclide.q, euclide.r);
         uK[k] = uK[k - 2] - (euclide.q * uK[k - 1]);
         vK[k] = vK[k - 2] - (euclide.q * vK[k - 1]);
-
         euclide.a = euclide.b;
         euclide.b = euclide.r;
         euclide.q = euclide.a / euclide.b;
         euclide.r = euclide.a % euclide.b;
         k++;
     }
-    result.u = uK[k - 1];
-    result.v = vK[k - 1];
-    result.gcd = euclide.b;
+    printf("%d\t=\t%d\tx\t%d\t+\t%d\n\n", euclide.a, euclide.b, euclide.q, euclide.r);
+    printf("%d = %d * %d + %d * %d", euclide.b, uK[k-1], a, vK[k - 1], b);
+
+    result.u = 0;
+    result.v = 0;
     return result;
 }
 
@@ -86,7 +88,7 @@ uint32_t modular_inv(uint32_t a, uint32_t n) {
 
 
 uint32_t fast_exp(uint32_t a, uint32_t k, uint32_t n) {
-    uint32_t result = 1;
+    uint64_t result = 1;
     a = a % n;
     while (k > 0) {
         if (k % 2 == 1) {
@@ -104,17 +106,39 @@ uint32_t fast_exp(uint32_t a, uint32_t k, uint32_t n) {
 * retourne zéro en cas d'échec
 */
 uint32_t least_primitive_root(uint32_t p) {
-    if (p == 2) return 1;
     uint32_t phi = p - 1;
-    for (uint32_t i = 2; i <= p; i++) {
-        EB const result = bezout(i, p);
-        if (result.gcd == 1) {
-            if (fast_exp(i, phi, p) == 1) {
-                return i;
-            }
+    uint32_t prime_factors[32];
+    uint32_t prime_factors_nb = 0;
+
+    // Compute the prime factors of phi
+    uint32_t i = 2;
+    while (phi > 1) {
+        if (phi % i == 0) {
+            prime_factors[prime_factors_nb] = i;
+            prime_factors_nb++;
+            phi /= i;
+        }
+        else {
+            i++;
         }
     }
-    return 0;
+
+    // Try all numbers from 2 to p - 1
+    for (uint32_t j = 2; j < p; j++) {
+        // Check if j is a primitive root
+        char is_primitive_root = 1;
+        for (uint32_t k = 0; k < prime_factors_nb; k++) {
+            if (fast_exp(j, (p - 1) / prime_factors[k], p) == 1) {
+                is_primitive_root = 0;
+                break;
+            }
+        }
+        if (is_primitive_root) {
+            return j;
+        }
+    }
+
+    return 0; // Return 0 to indicate failure (no primitive root found)
 }
 
 
@@ -220,12 +244,11 @@ char MR_test(uint32_t n, int witness_nb) {
 * retourné
 */
 uint32_t MR_prime(int k, float epsilon) {
-
     uint32_t candidate;
     do {
         candidate = (1 << (k - 1)) + generate_random((1 << (k - 1)));
 
-        if (MR_test(candidate, 5)) {
+        if (MR_test(candidate, (int)ceil(log(1 / epsilon)))) {
             return candidate;
         }
     } while (1);
